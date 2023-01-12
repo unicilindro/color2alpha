@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import cv2
 import numpy as np
@@ -31,11 +32,27 @@ def color_to_alpha(input_filename, output_filename, bg_color_rgb):
 
     cv2.imwrite(output_filename, output)
 
+def convert_directory(dir_path, bg_color_rgb):
+    print(f'Processing all files in {dir_path}')
+    for filename in os.scandir(dir_path):
+        if not filename.is_file():
+            continue
+        if not filename.path.lower().endswith('.jpg'):
+            continue
+        output_fname = filename.path[:len(filename.path) - 4] + '-white-to-alpha.png'
+        color_to_alpha(filename.path, output_fname, bg_color_rgb)
+        print(f'Converted {filename.path} to {output_fname}')
+
+
 # Color to make transparent.
 BG_COLOR_RGB = [255, 255, 255] # white
 
 if len(sys.argv) == 3:
     color_to_alpha(sys.argv[1], sys.argv[2], BG_COLOR_RGB)
+elif len(sys.argv) == 2:
+    convert_directory(sys.argv[1], BG_COLOR_RGB)
+elif len(sys.argv) == 1:
+    convert_directory(os.path.dirname(sys.argv[0]), BG_COLOR_RGB)
 else:
     print("Incorrect usage usage, should be color2alpha input.jpg output.png")
 
