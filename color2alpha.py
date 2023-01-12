@@ -4,6 +4,19 @@ import time
 import PIL.Image
 import numpy as np
 
+ENABLE_CROPPING = True
+
+def find_crops(sum_alpha):
+    START_DENSITY = 5.
+    ADDED_MARGIN = 59 # 0.5cm @300dpi
+    n = sum_alpha.shape[0]
+    first = np.argmax(sum_alpha > START_DENSITY)
+    inverse = sum_alpha[::-1]
+    last = n - np.argmax(inverse > START_DENSITY)
+    first = max(first - ADDED_MARGIN, 0)
+    last = min(last + ADDED_MARGIN, n)
+    return (first, last)
+
 def color_to_alpha(input_filename, output_filename, bg_color_rgb):
     MAX_CHANNEL = 255
     MAX_ALPHA = 255
@@ -30,6 +43,11 @@ def color_to_alpha(input_filename, output_filename, bg_color_rgb):
     output[:, :, 0:3] = foreground
     # Set alpha channel
     output[:, :, 3:4] = alpha * MAX_ALPHA
+
+    if ENABLE_CROPPING:
+        crop_0 = find_crops(np.sum(alpha,axis=(1,2)))
+        crop_1 = find_crops(np.sum(alpha,axis=(0,2)))
+        output = output[crop_0[0]:crop_0[1],crop_1[0]:crop_1[1]]
 
     output_image = PIL.Image.fromarray(output)
     output_image.save(output_filename, dpi=input_image.info.get('dpi'),
