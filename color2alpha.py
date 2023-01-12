@@ -1,15 +1,16 @@
 import sys
 import os
 import time
-import cv2
+import PIL.Image
 import numpy as np
 
 def color_to_alpha(input_filename, output_filename, bg_color_rgb):
     MAX_CHANNEL = 255
     MAX_ALPHA = 255
-    input = cv2.imread(input_filename, cv2.IMREAD_COLOR)
-    # RGB to BGR
-    bg_color = np.array(list(reversed(bg_color_rgb)), dtype=np.uint8)
+    input_image = PIL.Image.open(input_filename)
+    input = np.asarray(input_image)
+
+    bg_color = np.array(bg_color_rgb, dtype=np.uint8)
 
     # Inversing the formula Img = alpha * Fg + (1-alpha) * Bg
     alpha_per_channel = (0
@@ -30,7 +31,9 @@ def color_to_alpha(input_filename, output_filename, bg_color_rgb):
     # Set alpha channel
     output[:, :, 3:4] = alpha * MAX_ALPHA
 
-    cv2.imwrite(output_filename, output)
+    output_image = PIL.Image.fromarray(output)
+    output_image.save(output_filename, dpi=input_image.info.get('dpi'),
+                      exif=input_image.info.get('exif'))
 
 def convert_directory(dir_path, bg_color_rgb):
     print(f'Processing all files in {dir_path}')
