@@ -41,7 +41,7 @@ def convert_directory(dir_path, bg_color_rgb):
             continue
         output_fname = filename.path[:len(filename.path) - 4] + '-white-to-alpha.png'
         color_to_alpha(filename.path, output_fname, bg_color_rgb)
-        print(f'Converted {filename.path} to {output_fname}')
+        print(f'Created {output_fname}')
 
 
 # Color to make transparent.
